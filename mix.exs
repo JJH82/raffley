@@ -44,7 +44,7 @@ defmodule Raffley.MixProject do
       {:phoenix_live_dashboard, "== 0.8.6"},
       {:esbuild, "== 0.9.0", runtime: Mix.env() == :dev},
       {:tailwind, "== 0.2.4", runtime: Mix.env() == :dev},
-      {:heroicons, path: "assets/heroicons"},
+      {:heroicons, path: "deps/heroicons"},
       {:swoosh, "== 1.17.10"},
       {:finch, "== 0.19.0"},
       {:telemetry_metrics, "== 1.1.0"},
