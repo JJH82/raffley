@@ -5,12 +5,16 @@ defmodule RaffleyWeb.RaffleLive.Index do
   import RaffleyWeb.CustomComponents
 
   def mount(_params, _session, socket) do
+    {:ok, socket}
+  end
+
+  def handle_params(params, _uri, socket) do
     socket =
       socket
-      |> stream(:raffles, Raffles.list_raffles())
-      |> assign(:form, to_form(%{}))
+      |> stream(:raffles, Raffles.filter_raffles(params))
+      |> assign(:form, to_form(params))
 
-    {:ok, socket}
+    {:noreply, socket}
   end
 
   def render(assigns) do
@@ -36,8 +40,8 @@ defmodule RaffleyWeb.RaffleLive.Index do
 
   def filter_form(assigns) do
     ~H"""
-    <.form for={@form}>
-      <.input field={@form[:q]} placeholder="Search..." autocomplete="off" />
+    <.form for={@form} id="filter-form" phx-change="filter">
+      <.input field={@form[:q]} placeholder="Search..." autocomplete="off" phx-debounce="500" />
       <.input
         type="select"
         field={@form[:status]}
@@ -48,8 +52,15 @@ defmodule RaffleyWeb.RaffleLive.Index do
         type="select"
         field={@form[:sort_by]}
         prompt="Sort By"
-        options={[:prize, :ticket_price]}
+        options={[
+          Prize: "prize",
+          "Price: High to Low": "ticket_price_desc",
+          "Price: Low to High": "ticket_price_asc"
+        ]}
       />
+      <.link navigate={~p"/raffles"}>
+        Reset
+      </.link>
     </.form>
     """
   end
@@ -59,7 +70,7 @@ defmodule RaffleyWeb.RaffleLive.Index do
 
   def raffle_card(assigns) do
     ~H"""
-    <.link navigate={~p"/raffles/#{@raffle.id}"}>
+    <.link navigate={~p"/raffles/#{@raffle.id}"} id={@id}>
       <div class="card">
         <img src={@raffle.image_path} />
         <h2>{@raffle.prize}</h2>
@@ -71,5 +82,16 @@ defmodule RaffleyWeb.RaffleLive.Index do
       </div>
     </.link>
     """
+  end
+
+  def handle_event("filter", params, socket) do
+    params =
+      params
+      |> Map.take(~w(q status sort_by))
+      |> Map.reject(fn {_, v} -> v == "" end)
+
+    socket = push_navigate(socket, to: ~p"/raffles?#{params}")
+
+    {:noreply, socket}
   end
 end
