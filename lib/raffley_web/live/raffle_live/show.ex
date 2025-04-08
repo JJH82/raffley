@@ -15,13 +15,18 @@ defmodule RaffleyWeb.RaffleLive.Show do
       socket
       |> assign(:raffle, raffle)
       |> assign(:page_title, raffle.prize)
-      |> assign(:featured_raffles, Raffles.featured_raffles(raffle))
+      |> assign_async(:featured_raffles, fn ->
+        {:ok, %{featured_raffles: Raffles.featured_raffles(raffle)}}
+      end)
 
     {:noreply, socket}
   end
 
   def render(assigns) do
     ~H"""
+    <pre :if={false}>
+    <%= inspect(@featured_raffles, pretty: true) %>
+    </pre>
     <div class="raffle-show">
       <div class="raffle">
         <img src={@raffle.image_path} />
@@ -45,7 +50,7 @@ defmodule RaffleyWeb.RaffleLive.Show do
         <div class="left"></div>
         
         <div class="right">
-          <.featured_raffles raffle={@featured_raffles} />
+          <.featured_raffles raffles={@featured_raffles} />
         </div>
       </div>
     </div>
@@ -57,13 +62,27 @@ defmodule RaffleyWeb.RaffleLive.Show do
     <section>
       <h4>Featured Raffles</h4>
       
-      <ul class="raffles">
-        <li :for={raffle <- @raffle}>
-          <.link navigate={~p"/raffles/#{raffle}"}>
-            <img src={raffle.image_path} /> {raffle.prize}
-          </.link>
-        </li>
-      </ul>
+      <.async_result :let={result} assign={@raffles}>
+        <:loading>
+          <div class="loading">
+            <div class="spinner"></div>
+          </div>
+        </:loading>
+        
+        <:failed :let={{:error, reason}}>
+          <div class="failed">
+            Yikes: {reason}
+          </div>
+        </:failed>
+        
+        <ul class="raffles">
+          <li :for={raffle <- result}>
+            <.link navigate={~p"/raffles/#{raffle}"}>
+              <img src={raffle.image_path} /> {raffle.prize}
+            </.link>
+          </li>
+        </ul>
+      </.async_result>
     </section>
     """
   end
