@@ -58,7 +58,7 @@ defmodule RaffleyWeb.RaffleLive.Index do
           "Price: Low to High": "ticket_price_asc"
         ]}
       />
-      <.link navigate={~p"/raffles"}>
+      <.link patch={~p"/raffles"}>
         Reset
       </.link>
     </.form>
@@ -90,7 +90,7 @@ defmodule RaffleyWeb.RaffleLive.Index do
       |> Map.take(~w(q status sort_by))
       |> Map.reject(fn {_, v} -> v == "" end)
 
-    socket = push_navigate(socket, to: ~p"/raffles?#{params}")
+    socket = push_patch(socket, to: ~p"/raffles?#{params}")
 
     {:noreply, socket}
   end
