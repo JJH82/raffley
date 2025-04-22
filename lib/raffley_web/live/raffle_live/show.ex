@@ -26,7 +26,7 @@ defmodule RaffleyWeb.RaffleLive.Show do
   def render(assigns) do
     ~H"""
     <pre :if={false}>
-    <%= inspect(assigns.featured_raffles, pretty: true)  %>
+    <%= inspect(@featured_raffles, pretty: true) %>
     </pre>
     <div class="raffle-show">
       <div class="raffle">
@@ -51,7 +51,7 @@ defmodule RaffleyWeb.RaffleLive.Show do
         <div class="left"></div>
         
         <div class="right">
-          <.featured_raffles raffle={@featured_raffles} />
+          <.featured_raffles raffles={@featured_raffles} />
         </div>
       </div>
     </div>
@@ -63,7 +63,7 @@ defmodule RaffleyWeb.RaffleLive.Show do
     <section>
       <h4>Featured Raffles</h4>
       
-      <.async_result :let={result} assign={@raffle}>
+      <.async_result :let={result} assign={@raffles}>
         <:loading>
           <div class="loading">
             <div class="spinner"></div>
