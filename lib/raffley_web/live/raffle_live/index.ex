@@ -11,8 +11,8 @@ defmodule RaffleyWeb.RaffleLive.Index do
   def handle_params(params, _uri, socket) do
     socket =
       socket
-      |> stream(:raffles, Raffles.filter_raffles(params))
       |> assign(:form, to_form(params))
+      |> stream(:raffles, Raffles.filter_raffles(params), reset: true)
 
     {:noreply, socket}
   end
@@ -70,7 +70,7 @@ defmodule RaffleyWeb.RaffleLive.Index do
 
   def raffle_card(assigns) do
     ~H"""
-    <.link navigate={~p"/raffles/#{@raffle.id}"} id={@id}>
+    <.link navigate={~p"/raffles/#{@raffle}"} id={@id}>
       <div class="card">
         <img src={@raffle.image_path} />
         <h2>{@raffle.prize}</h2>
