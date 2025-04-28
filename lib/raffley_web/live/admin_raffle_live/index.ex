@@ -16,7 +16,22 @@ defmodule RaffleyWeb.AdminRaffleLive.Index do
   def render(assigns) do
     ~H"""
     <div class="admin-index">
-      <.header>
+      <.button phx-click={
+        JS.toggle(
+          to: "#joke",
+          in: {"ease-in-out duration-300", "opacity-0", "opacity-100"},
+          out: {"ease-in-out duration-300", "opacity-100", "opacity-0"},
+          time: 300
+        )
+      }>
+        Toggle Joke
+      </.button>
+      
+      <div id="joke" class="joke">
+        What's a tree's favorite drink?
+      </div>
+      
+      <.header class="mt-6">
         {@page_title}
         <:actions>
           <.link navigate={~p"/admin/raffles/new"} class="button">
@@ -25,7 +40,11 @@ defmodule RaffleyWeb.AdminRaffleLive.Index do
         </:actions>
       </.header>
       
-      <.table id="raffle" rows={@streams.raffles}>
+      <.table
+        id="raffle"
+        rows={@streams.raffles}
+        row_click={fn {_, raffle} -> JS.navigate(~p"/raffles/#{raffle}") end}
+      >
         <:col :let={{_dom_id, raffle}} label="Prize">
           <.link navigate={~p"/raffles/#{raffle}"}>
             {raffle.prize}
@@ -39,8 +58,35 @@ defmodule RaffleyWeb.AdminRaffleLive.Index do
         <:col :let={{_dom_id, raffle}} label="Ticket Price">
           {raffle.ticket_price}
         </:col>
+        
+        <:action :let={{_dom_id, raffle}}>
+          <.link navigate={~p"/admin/raffles/#{raffle}/edit"}>
+            Edit
+          </.link>
+        </:action>
+        
+        <:action :let={{dom_id, raffle}}>
+          <.link phx-click={delete_and_hide(dom_id, raffle)} data-confirm="Are you sure?">
+            Delete
+          </.link>
+        </:action>
       </.table>
     </div>
     """
+  end
+
+  def handle_event("delete", %{"id" => id}, socket) do
+    Process.sleep(3000)
+    raffle = Admin.get_raffle!(id)
+    {:ok, _} = Admin.delete_raffle(raffle)
+
+    socket = stream_delete(socket, :raffles, raffle)
+
+    {:noreply, socket}
+  end
+
+  def delete_and_hide(dom_id, raffle) do
+    JS.push("delete", value: %{id: raffle.id})
+    |> JS.hide(to: "##{dom_id}", transition: "fade-out")
   end
 end

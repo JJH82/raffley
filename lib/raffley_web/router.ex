@@ -21,8 +21,16 @@ defmodule RaffleyWeb.Router do
     live "/raffles", RaffleLive.Index
     live "/raffles/:id", RaffleLive.Show
 
-    live "/admin/raffles/new", AdminRaffleLive.Form
     live "/admin/raffles", AdminRaffleLive.Index
+    live "/admin/raffles/new", AdminRaffleLive.Form, :new
+    live "/admin/raffles/:id/edit", AdminRaffleLive.Form, :edit
+
+    live "/charities", CharityLive.Index, :index
+    live "/charities/new", CharityLive.Index, :new
+    live "/charities/:id/edit", CharityLive.Index, :edit
+
+    live "/charities/:id", CharityLive.Show, :show
+    live "/charities/:id/show/edit", CharityLive.Show, :edit
   end
 
   # Other scopes may use custom stacks.
