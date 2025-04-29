@@ -11,8 +11,18 @@ defmodule Raffley.Raffles do
     Raffle
     |> with_status(filter["status"])
     |> search_by(filter["q"])
+    |> with_charity(filter["charity"])
     |> sort(filter["sort_by"])
+    |> preload(:charity)
     |> Repo.all()
+  end
+
+  defp with_charity(query, slug) when slug in ["", nil], do: query
+
+  defp with_charity(query, slug) do
+    from r in query,
+      join: c in assoc(r, :charity),
+      where: c.slug == ^slug
   end
 
   defp with_status(query, status)
@@ -40,12 +50,19 @@ defmodule Raffley.Raffles do
     order_by(query, asc: :ticket_price)
   end
 
+  defp sort(query, "charity") do
+    from r in query,
+      join: c in assoc(r, :charity),
+      order_by: c.name
+  end
+
   defp sort(query, _) do
     order_by(query, :id)
   end
 
   def get_raffle!(id) do
     Repo.get!(Raffle, id)
+    |> Repo.preload(:charity)
   end
 
   def featured_raffles(raffle) do
